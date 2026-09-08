@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PackageId>CSweet.Plugins.Platform.YouTube</PackageId>
+    <Authors>C-Sweet</Authors>
+    <Description>Deterministic, broker-enforced YouTube connection contracts for C-Sweet.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CSweet.Agent.SDK" Version="3.38.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../csweet-plugin.json" Link="csweet-plugin.json" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="contentFiles/any/any" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>
