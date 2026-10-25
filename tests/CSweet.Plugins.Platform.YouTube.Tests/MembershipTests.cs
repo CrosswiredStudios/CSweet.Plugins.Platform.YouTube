@@ -75,7 +75,7 @@ public sealed class MembershipTests
     public async Task MembershipMappingsHaveOnlyReviewedScopesAndResponseOwnership()
     {
         var manifest = await AgentManifestLoader.LoadAsync(Path.Combine(AppContext.BaseDirectory, "csweet-plugin.json"), default);
-        Assert.Equal("2.3", manifest.Protocol.MinimumVersion);
+        Assert.Equal("2.4", manifest.Protocol.MinimumVersion);
         foreach (var capability in new[] { YouTubeCapabilities.ListMembers, YouTubeCapabilities.ListMembershipLevels })
         {
             var op = manifest.ProviderOperations.Single(x => x.Capability == capability);

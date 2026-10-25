@@ -1,10 +1,23 @@
 # YouTube Connection
 
-`com.csweet.connector.youtube` · 0.1.0 · .NET 10 · CSweet.Agent.SDK 3.38.0 · protocol 2.3
+`com.csweet.connector.youtube` · 0.2.0 · .NET 10 · CSweet.Agent.SDK 5.5.0 · protocol 2.4
 
 A deterministic integration package, separate from the conversational **YouTube Manager**.
-One organization-scoped connector binds one explicitly confirmed channel. Multiple agents
-can share it only through individual host-approved dependency bindings.
+Install once at enterprise scope, then connect accounts, import authorized channels and explicitly
+grant businesses whole-account or selected-channel access. Agents need narrower independent bindings.
+The host renders the native management page from this package's `accounts` declaration; it contains
+no Google/YouTube application-specific page. Base consent includes `openid profile` only to obtain
+the immutable account subject and optional display name from authenticated Google UserInfo.
+Email is not requested or used as identity proof. Every discovery page is checkpointed; partial
+inventories never widen business access. One authorization is not a promise that every Brand Account
+channel is discoverable. Authorize additional channels when Google requires it.
+
+Deployment administrators must configure a vault-backed OAuth profile, the correct verified public
+callback, enabled APIs, current branding/privacy policies and applicable Google verification/audits.
+Ordinary channel owners never enter client IDs or secrets. The repository policy documents are a
+development integration notice; production operators must publish applicable policies on their
+verified domains. No live-Google or production verification is claimed by fake-provider tests.
+See [the Google deployment and acceptance checklist](GOOGLE_SETUP.md) for operator release gates.
 
 `RequestUploadAsync` requires both typed video metadata and its retained conversation attachment
 reference. Read the asset ID from authorized chat history; do not substitute an attachment ID or
@@ -108,12 +121,22 @@ help. Consent alone does not establish eligibility. Missing permission, provider
 invalid data fail visibly, never as an invented empty membership list. These are bounded current-member
 reads, not an updates feed, full synchronization, membership mutations or real-provider acceptance.
 
-1. An administrator approves the exact connector build and its deployment-managed OAuth profile.
-2. A company user reviews access, signs in with Google and grants base read permissions.
-3. Host-brokered discovery shows channel names, available handles and IDs.
-4. The user confirms one channel. Validation independently rediscovers the accessible channel.
-5. Activation exposes the connection to explicitly authorized consumers.
-6. The personal settings flow shows connection state and progressive consent controls.
+1. An enterprise administrator reviews the exact plugin package and grants, approves installation,
+   and lands on the native plugin management page. Installation grants no external account access.
+2. Choose **Connect account**, review the privacy/consent notice and base permissions, then sign in
+   and consent on Google's own page. Deployment profile setup is administrator-only, not a user step.
+3. The plugin's authenticated identity and paginated discovery declarations import only accessible
+   channels. Incomplete imports are resumable and cannot expose a partial inventory as complete.
+4. Accounts group by verified immutable provider subject, not email/name. An additional authorization
+   may be required for a Brand Account channel. Separate accounts never merge on display labels.
+5. An administrator shares selected channels, or explicitly acknowledges future authorized imports
+   when sharing a whole account, with a business. This does not automatically authorize any agent.
+6. A business manager explicitly binds YouTube Manager to one permitted channel and its reviewed
+   abilities. Progressive provider consent, business grants, agent bindings and action approvals
+   remain separate. The management page lists each authorization and its accessible channels.
+7. Removing business access leaves shared tokens connected. Disconnecting an account previews impact,
+   stops external work immediately and queues revocation. Complete data deletion remains a production
+   gate; the page must not claim deletion before all authorized copies have been confirmed removed.
 
 Ordinary users never enter OAuth client credentials. Managed deployments configure the
 verified `com.csweet.google.youtube` profile; self-hosted administrators configure it once

@@ -101,7 +101,7 @@ public sealed class VideoEditTests
         await Assert.ThrowsAsync<PlatformCapabilityException>(() => new YouTubeClient(new AgentTestRuntime().CreateContext().Platform).RequestMetadataEditAsync(expected));
         var manifest = await AgentManifestLoader.LoadAsync(Path.Combine(AppContext.BaseDirectory, "csweet-plugin.json"), default);
         var operation = Assert.Single(manifest.ProviderOperations, x => x.Capability == YouTubeCapabilities.UpdateVideoMetadata);
-        Assert.Equal("2.3", manifest.Protocol.MinimumVersion); Assert.Equal("write", operation.Effect);
+        Assert.Equal("2.4", manifest.Protocol.MinimumVersion); Assert.Equal("write", operation.Effect);
         Assert.Equal("caller-key", operation.Idempotency); Assert.Equal("PUT", operation.Http!.Method);
         Assert.Equal("snippet", operation.Http.QueryConstants["part"]); Assert.Equal("/expectedETag", operation.Http.IfMatchInput);
         Assert.Equal(new[] { "content" }, operation.Http.ScopeSets);

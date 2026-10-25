@@ -3,8 +3,8 @@
   "manifestVersion": "2.0",
   "kind": "connector",
   "id": "com.csweet.connector.youtube",
-  "name": "YouTube Connection",
-  "version": "0.1.0",
+  "name": "YouTube",
+  "version": "0.2.0",
   "publisher": {
     "id": "com.csweet",
     "name": "C-Sweet"
@@ -15,14 +15,46 @@
     "targetFramework": "net10.0",
     "defaultActivationMode": "OnDemand",
     "defaultTickFrequencySeconds": 300,
-    "supportsMultipleInstallations": true,
+    "supportsMultipleInstallations": false,
     "maximumConcurrentJobs": 1
   },
   "protocol": {
-    "minimumVersion": "2.3",
+    "minimumVersion": "2.4",
     "maximumVersion": "2.x"
   },
   "provides": [
+    {
+      "name": "youtube.api.account.identity.v1",
+      "description": "Read immutable account identity through authenticated Google UserInfo. Bootstrap only; never a model tool.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "sub": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "sub"
+        ],
+        "additionalProperties": true
+      },
+      "executionTimeoutSeconds": 30,
+      "idempotency": "none",
+      "riskClass": "bootstrap"
+    },
     {
       "name": "youtube.api.member.list.v1",
       "description": "Read one page of current members of the confirmed, provider-eligible channel; membership access is independently granted.",
@@ -333,7 +365,13 @@
       "description": "Discover channels owned by the authenticated account for explicit setup confirmation.",
       "inputSchema": {
         "type": "object",
-        "properties": {},
+        "properties": {
+          "pageToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
         "required": [],
         "additionalProperties": false
       },
@@ -2346,7 +2384,8 @@
       "providerProfile": "com.csweet.google.youtube",
       "allowedOrigins": [
         "https://www.googleapis.com",
-        "https://youtubeanalytics.googleapis.com"
+        "https://youtubeanalytics.googleapis.com",
+        "https://openidconnect.googleapis.com"
       ],
       "provider": {
         "displayName": "Google",
@@ -2364,10 +2403,12 @@
         {
           "id": "base",
           "label": "Read channel and analytics",
-          "purpose": "Read your selected channel and its official non-revenue analytics.",
+          "purpose": "Identify the account, discover authorized channels and read official non-revenue analytics. No business or agent access is automatic.",
           "scopes": [
             "https://www.googleapis.com/auth/youtube.readonly",
-            "https://www.googleapis.com/auth/yt-analytics.readonly"
+            "https://www.googleapis.com/auth/yt-analytics.readonly",
+            "openid",
+            "profile"
           ],
           "required": true
         },
@@ -2411,12 +2452,12 @@
     }
   ],
   "setup": {
-    "required": true,
+    "required": false,
     "entryFlow": "connect",
     "flows": [
       {
         "id": "connect",
-        "title": "Connect your YouTube channel",
+        "title": "Connect a Google account",
         "steps": [
           {
             "id": "access",
@@ -2430,41 +2471,6 @@
             "title": "Connect Google",
             "connection": "youtube",
             "scopeSet": "base"
-          },
-          {
-            "id": "channel",
-            "kind": "account-selector",
-            "title": "Confirm your channel",
-            "description": "Choose the channel this connection will represent. Additional channels need separate connections.",
-            "connection": "youtube",
-            "capability": "youtube.api.channel.discover.v1",
-            "accountOptions": {
-              "itemsPointer": "/items",
-              "idPointer": "/id",
-              "namePointer": "/snippet/title",
-              "handlePointer": "/snippet/customUrl",
-              "nextPageTokenPointer": "/nextPageToken"
-            }
-          },
-          {
-            "id": "validate",
-            "kind": "health-check",
-            "title": "Validate channel access",
-            "connection": "youtube",
-            "capability": "youtube.api.channel.discover.v1",
-            "accountOptions": {
-              "itemsPointer": "/items",
-              "idPointer": "/id",
-              "namePointer": "/snippet/title",
-              "handlePointer": "/snippet/customUrl",
-              "nextPageTokenPointer": "/nextPageToken"
-            }
-          },
-          {
-            "id": "confirm",
-            "kind": "confirmation",
-            "title": "Activate this connection",
-            "description": "Only explicitly authorized agents in your organization can use this channel connection."
           }
         ]
       },
@@ -2488,7 +2494,7 @@
             "id": "publishing-consent",
             "kind": "permission-request",
             "title": "Enable reviewed video uploads",
-            "description": "Allows explicitly authorized agents to request an approved video upload. Google may restrict public visibility until the deployment's API project is verified.",
+            "description": "Uploads require explicit consent, business and agent grants, and an approved request. Verify production behavior against the deployment's Google project.",
             "connection": "youtube",
             "scopeSet": "publishing"
           },
@@ -2519,6 +2525,45 @@
     }
   ],
   "providerOperations": [
+    {
+      "capability": "youtube.api.account.identity.v1",
+      "effect": "read",
+      "idempotency": "none",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "sub": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "sub"
+        ],
+        "additionalProperties": true
+      },
+      "http": {
+        "connection": "youtube",
+        "scopeSets": [
+          "base"
+        ],
+        "method": "GET",
+        "endpoint": "https://openidconnect.googleapis.com/v1/userinfo",
+        "bootstrap": true
+      }
+    },
     {
       "capability": "youtube.api.member.list.v1",
       "effect": "read",
@@ -2878,7 +2923,13 @@
       "idempotency": "none",
       "inputSchema": {
         "type": "object",
-        "properties": {},
+        "properties": {
+          "pageToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
         "required": [],
         "additionalProperties": false
       },
@@ -2990,7 +3041,9 @@
           "maxResults": "50",
           "fields": "nextPageToken,items(id,snippet(title,customUrl),statistics(viewCount,subscriberCount,videoCount,hiddenSubscriberCount),contentDetails(relatedPlaylists(uploads)))"
         },
-        "queryInputs": {},
+        "queryInputs": {
+          "pageToken": "/pageToken"
+        },
         "bootstrap": true
       }
     },
@@ -5297,5 +5350,119 @@
       "connector"
     ],
     "documentationUrl": "README.md"
+  },
+  "accounts": {
+    "layout": "accounts-and-resources.v1",
+    "connection": "youtube",
+    "setupFlow": "connect",
+    "accountLabel": "Google account",
+    "accountsLabel": "Google accounts",
+    "resourceType": "youtube.channel",
+    "resourceLabel": "Channel",
+    "resourcesLabel": "Channels",
+    "discoveryCapability": "youtube.api.channel.discover.v1",
+    "resourceProjection": {
+      "itemsPointer": "/items",
+      "idPointer": "/id",
+      "namePointer": "/snippet/title",
+      "handlePointer": "/snippet/customUrl",
+      "nextPageTokenPointer": "/nextPageToken"
+    },
+    "pageTokenInput": "pageToken",
+    "maximumResources": 1000,
+    "identity": {
+      "capability": "youtube.api.account.identity.v1",
+      "subjectPointer": "/sub",
+      "namePointer": "/name"
+    },
+    "permissions": [
+      {
+        "id": "read",
+        "label": "Read channels and analytics",
+        "purpose": "Read content, engagement and official non-revenue metrics.",
+        "scopeSets": [
+          "base"
+        ],
+        "capabilities": [
+          "youtube.api.video-category.list.v1",
+          "youtube.api.channel.read.v1",
+          "youtube.api.video.read.v1",
+          "youtube.api.playlist.list.v1",
+          "youtube.api.playlist-items.list.v1",
+          "youtube.api.comment-threads.list.v1",
+          "youtube.api.analytics.summary.v1",
+          "youtube.api.comment.read.v1",
+          "youtube.api.comment-replies.list.v1",
+          "youtube.api.playlist.read.v1"
+        ]
+      },
+      {
+        "id": "publishing",
+        "label": "Publish videos",
+        "purpose": "Request approved uploads from organization media assets.",
+        "scopeSets": [
+          "base",
+          "publishing"
+        ],
+        "capabilities": [
+          "youtube.api.video.upload.v1"
+        ]
+      },
+      {
+        "id": "content",
+        "label": "Manage supported content and interactions",
+        "purpose": "Use implemented metadata, comment, caption and live-status operations. Public changes still require approval.",
+        "scopeSets": [
+          "base",
+          "content"
+        ],
+        "capabilities": [
+          "youtube.api.caption.list.v1",
+          "youtube.api.live-broadcast.read.v1",
+          "youtube.api.live-stream.read.v1",
+          "youtube.api.comment.reply.v1",
+          "youtube.api.video.metadata.update.v1",
+          "youtube.api.playlist.metadata.update.v1"
+        ]
+      },
+      {
+        "id": "memberships",
+        "label": "Read memberships",
+        "purpose": "Read members and levels only for eligible channels.",
+        "scopeSets": [
+          "base",
+          "memberships"
+        ],
+        "capabilities": [
+          "youtube.api.member.list.v1",
+          "youtube.api.membership-level.list.v1"
+        ]
+      }
+    ],
+    "privacyPolicyUrl": "https://github.com/CrosswiredStudios/CSweet.Plugins.Platform.YouTube/blob/main/PRIVACY.md",
+    "termsOfServiceUrl": "https://github.com/CrosswiredStudios/CSweet.Plugins.Platform.YouTube/blob/main/TERMS.md",
+    "policyVersion": "0.2.0",
+    "consentPurpose": "Development preview: use authorized test accounts only until data-deletion and real-Google acceptance gates are complete. Sign in through Google's own page, import authorized channels, then explicitly assign business and agent access. Offline authorization supports ongoing work. Agents never receive passwords or tokens.",
+    "policyLinks": [
+      {
+        "label": "YouTube Terms of Service",
+        "url": "https://www.youtube.com/t/terms"
+      },
+      {
+        "label": "Google Privacy Policy",
+        "url": "https://policies.google.com/privacy"
+      },
+      {
+        "label": "Manage Google permissions",
+        "url": "https://myaccount.google.com/permissions"
+      }
+    ],
+    "lifecycle": {
+      "authorizationCheckHours": 24,
+      "metadataRefreshDays": 30,
+      "deletionTargetHours": 24,
+      "deletionMaximumDays": 7,
+      "revocationScope": "subject-project"
+    }
   }
 }

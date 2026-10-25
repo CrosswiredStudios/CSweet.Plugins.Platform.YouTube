@@ -5,6 +5,7 @@ namespace CSweet.Plugins.Platform.YouTube;
 
 public static class YouTubeCapabilities
 {
+    public const string ReadAccountIdentity = "youtube.api.account.identity.v1";
     public const string DiscoverChannels = "youtube.api.channel.discover.v1";
     public const string ReadChannel = "youtube.api.channel.read.v1";
     public const string ReadVideo = "youtube.api.video.read.v1";
@@ -25,7 +26,7 @@ public static class YouTubeCapabilities
     public const string ReadLiveBroadcast = "youtube.api.live-broadcast.read.v1";
     public const string ReadLiveStream = "youtube.api.live-stream.read.v1";
     public const string AnalyticsSummary = "youtube.api.analytics.summary.v1";
-    public static IReadOnlyList<string> All { get; } = [DiscoverChannels, ReadChannel, ReadVideo,
+    public static IReadOnlyList<string> All { get; } = [ReadAccountIdentity, DiscoverChannels, ReadChannel, ReadVideo,
         ListPlaylists, ReadPlaylist, UpdatePlaylistMetadata, ListPlaylistItems, ListCommentThreads, ListCommentReplies, ReadComment, ReplyToComment, UploadVideo, UpdateVideoMetadata, ListCaptions, ReadLiveBroadcast, ReadLiveStream, AnalyticsSummary, ListVideoCategories, ListMembers, ListMembershipLevels];
 }
 

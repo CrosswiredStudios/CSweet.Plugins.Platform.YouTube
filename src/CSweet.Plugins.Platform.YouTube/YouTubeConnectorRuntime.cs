@@ -6,13 +6,13 @@ namespace CSweet.Plugins.Platform.YouTube;
 public sealed class YouTubeConnectorRuntime : CSweetAgentBase
 {
     public override string AgentId => "com.csweet.connector.youtube";
-    public override string Version => "0.1.0";
+    public override string Version => "0.2.0";
 
     protected override Task<AgentWorkResult> ExecuteCapabilityCoreAsync(AgentCapabilityRequest request,
         AgentRuntimeContext context, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(AgentWorkResult.Failure(
-            "Connector operations require the protocol 2.1 host broker, an approved package/profile and an explicit consumer binding."));
+            "Connector operations require the protocol 2.4 host broker, reviewed provider access, business resource grants and an explicit consumer binding."));
     }
 }

@@ -129,7 +129,14 @@ public sealed class YouTubeClientTests
         {
             var http = Assert.IsType<CSweet.Agent.Contracts.Packaging.ConnectorHttpOperation>(operation.Http);
             Assert.Equal("GET", http.Method); Assert.Equal("read", operation.Effect);
-            Assert.Contains("fields", http.QueryConstants.Keys);
+            if (operation.Capability == YouTubeCapabilities.ReadAccountIdentity)
+            {
+                Assert.True(http.Bootstrap);
+                Assert.Equal("https://openidconnect.googleapis.com/v1/userinfo", http.Endpoint);
+                Assert.Empty(http.QueryInputs);
+                Assert.Empty(http.QueryConstants);
+            }
+            else Assert.Contains("fields", http.QueryConstants.Keys);
             if (operation.Capability == YouTubeCapabilities.ListVideoCategories)
             {
                 Assert.Equal("https://www.googleapis.com/youtube/v3/videoCategories", http.Endpoint);

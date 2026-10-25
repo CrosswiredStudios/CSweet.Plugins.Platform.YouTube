@@ -1,5 +1,12 @@
 # Connector authority
 
+Protocol 2.4 separates provider consent, enterprise/business channel grants and consuming-agent
+bindings. `youtube.api.account.identity.v1` and channel discovery are bootstrap-only reads and are
+not business permission tools. Publishing/content/membership consent remains progressive. The host
+must prove the selected channel/authorization relationship before every request and result release.
+Revoking business access does not revoke credentials shared with another business. Reconnect must
+not restore autonomous policies. Revenue and partner workflows are not advertised by these groups.
+
 Playlist metadata consumers separately request `youtube.api.playlist.read.v1` (base consent) and
 `youtube.api.playlist.metadata.update.v1` (content consent), plus managed-action request/read/cancel
 controls and channel-read authority for reconciliation. The read independently checks ownership.

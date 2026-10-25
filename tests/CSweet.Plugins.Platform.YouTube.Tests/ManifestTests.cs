@@ -16,7 +16,13 @@ public sealed class ManifestTests
         Assert.Equal(agent.AgentId, manifest.Id);
         Assert.Equal(agent.Version, manifest.Version);
         Assert.Equal("connector", manifest.Kind);
-        Assert.Equal("2.3", manifest.Protocol.MinimumVersion);
+        Assert.Equal("2.4", manifest.Protocol.MinimumVersion);
+        Assert.False(manifest.Setup!.Required);
+        Assert.NotNull(manifest.Accounts);
+        Assert.Equal("youtube.channel", manifest.Accounts.ResourceType);
+        Assert.Equal(YouTubeCapabilities.ReadAccountIdentity, manifest.Accounts.Identity!.Capability);
+        Assert.All(manifest.Accounts.Permissions.SelectMany(x => x.Capabilities), capability =>
+            Assert.False(manifest.ProviderOperations.Single(x => x.Capability == capability).Http!.Bootstrap));
         Assert.Equal(YouTubeCapabilities.All.Order(), manifest.Capabilities.Order());
         Assert.True(File.Exists(Path.Combine(
             root,
