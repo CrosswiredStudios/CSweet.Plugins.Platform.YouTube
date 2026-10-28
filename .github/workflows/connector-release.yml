@@ -1,14 +1,13 @@
-name: Connector verification and release
+name: Connector verification and keyless publishing
 
 on:
   pull_request:
   push:
     branches: [main]
-    tags: ['v*.*.*']
   workflow_dispatch:
     inputs:
       publish:
-        description: Publish verified package to nuget.org and create a preview GitHub release
+        description: Publish the verified package to nuget.org
         type: boolean
         default: false
 
@@ -25,6 +24,7 @@ jobs:
     timeout-minutes: 20
     outputs:
       version: ${{ steps.version.outputs.version }}
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,64 +32,73 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Resolve and verify release version
+      - name: Resolve release version
         id: version
         shell: pwsh
         run: |
           $version = [string](Get-Content csweet-plugin.json -Raw | ConvertFrom-Json).version
-          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") { throw 'Tag does not match the manifest.' }
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Invalid release version.' }
           "version=$version" >> $env:GITHUB_OUTPUT
-      - name: Test, self-test, pack, inspect and consume package
+      - name: Test, pack and verify a fresh consumer
         shell: pwsh
         run: ./scripts/Test-Release.ps1
+      - name: Check exact release identity and source provenance
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: ./scripts/Assert-ReleaseArtifact.ps1 -Directory "artifacts/release/$env:RELEASE_VERSION" -ExpectedVersion $env:RELEASE_VERSION -SourceCommit $env:GITHUB_SHA
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: connector-tests
           path: artifacts/test-results/*.trx
-          if-no-files-found: warn
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
+        id: upload
         with:
           name: connector-release
           path: artifacts/release/${{ steps.version.outputs.version }}/
           if-no-files-found: error
+          overwrite: false
+          retention-days: 7
 
   publish:
     needs: verify
-    if: github.repository == 'CrosswiredStudios/CSweet.Plugins.Platform.YouTube' && (startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish))
+    if: github.repository == 'CrosswiredStudios/CSweet.Plugins.Platform.YouTube' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: release
     permissions:
-      contents: write
+      contents: read
+      id-token: write
     steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/download-artifact@v4
         with:
-          name: connector-release
+          artifact-ids: ${{ needs.verify.outputs.artifact_id }}
           path: release
+          merge-multiple: true
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Verify staged digests
-        working-directory: release
-        run: sha256sum --check SHA256SUMS
-      - name: Publish consumer package
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      - name: Recheck the immutable verified artifact before authentication
         shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $PSNativeCommandUseErrorActionPreference = $true
-          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) { throw 'Configure the release environment NUGET_API_KEY first.' }
-          dotnet nuget push release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY
-      - name: Create traceable preview release
         env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
           RELEASE_VERSION: ${{ needs.verify.outputs.version }}
-          RELEASE_COMMIT: ${{ github.sha }}
+        run: ./scripts/Assert-ReleaseArtifact.ps1 -Directory release -ExpectedVersion $env:RELEASE_VERSION -SourceCommit $env:GITHUB_SHA
+      - name: NuGet login with repository-scoped OIDC
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: CrosswiredStudios
+      - name: Publish only the verified package
         shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          RELEASE_VERSION: ${{ needs.verify.outputs.version }}
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
-          $files = @(Get-ChildItem release -File | ForEach-Object FullName)
-          gh release create "v$env:RELEASE_VERSION" --target $env:RELEASE_COMMIT --title "YouTube connector $env:RELEASE_VERSION preview" --prerelease --notes-file "release/$env:RELEASE_VERSION.md" @files
+          dotnet nuget push "release/CSweet.Plugins.Platform.YouTube.$env:RELEASE_VERSION.nupkg" --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY
