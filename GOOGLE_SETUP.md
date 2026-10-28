@@ -1,6 +1,6 @@
 # Deployment checklist: Google and YouTube
 
-Development release 0.2.0. These are operator/release tasks, not steps for ordinary channel owners.
+Development release 0.2.1. These are operator/release tasks, not steps for ordinary channel owners.
 The normal experience stays Install → Approve → plugin page → Connect account → Google consent →
 import authorized channels → assign business access. No live Google acceptance is recorded here.
 

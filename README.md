@@ -1,6 +1,6 @@
 # YouTube Connection
 
-`com.csweet.connector.youtube` · 0.2.0 · .NET 10 · CSweet.Agent.SDK 5.5.0 · protocol 2.4
+`com.csweet.connector.youtube` · 0.2.1 · .NET 10 · CSweet.Agent.SDK 5.5.0 · protocol 2.4
 
 A deterministic integration package, separate from the conversational **YouTube Manager**.
 Install once at enterprise scope, then connect accounts, import authorized channels and explicitly
@@ -123,8 +123,9 @@ reads, not an updates feed, full synchronization, membership mutations or real-p
 
 1. An enterprise administrator reviews the exact plugin package and grants, approves installation,
    and lands on the native plugin management page. Installation grants no external account access.
-2. Choose **Connect account**, review the privacy/consent notice and base permissions, then sign in
-   and consent on Google's own page. Deployment profile setup is administrator-only, not a user step.
+2. Review the inline privacy notice and base permissions, then choose **Connect account** to sign in
+   and consent on Google's own page. Optional access is reviewed separately when changing permissions.
+   Deployment profile setup is administrator-only, not a user step.
 3. The plugin's authenticated identity and paginated discovery declarations import only accessible
    channels. Incomplete imports are resumable and cannot expose a partial inventory as complete.
 4. Accounts group by verified immutable provider subject, not email/name. An additional authorization
@@ -155,9 +156,9 @@ for the same source video; upload revision does not edit an existing video or ch
 Existing-video metadata changes use the separate conditional operation described above.
 The content permission enables caption/live-status reads and the separately approved reply operation.
 
-Account discovery currently fails visibly if more than one page is returned; it never
-silently confirms from an incomplete result. Avatar proxying and full discovery pagination
-remain pending. Comment-thread reads do not include all replies; use the separate reply capability
+The host checkpoints paginated account discovery up to the declared resource limit; interrupted
+or incomplete inventories never silently confirm additional business access. Avatar proxying
+remains pending. Comment-thread reads do not include all replies; use the separate reply capability
 with its parent-comment ownership preflight and continuation token. If Google cannot validate the
 parent comment, the read fails closed; production acceptance of this preflight is still required.
 Provider-derived counts are
@@ -175,8 +176,12 @@ dotnet run --project src/CSweet.Plugins.Platform.YouTube -- --self-test
 dotnet pack src/CSweet.Plugins.Platform.YouTube -c Release
 ```
 
-During shared SDK development, restore from the local 3.38.0 verification feed. There are no
-sibling source references. Tests use `AgentTestRuntime` and deterministic responses without
+For the complete release check, run `pwsh scripts/Test-Release.ps1`. nuget.org is the authoritative
+public dependency feed; no local SDK feed or sibling source reference is required. The script
+packs and inspects the exact manifest, metadata and dependencies, then restores a standalone
+consumer from that package with a fresh package directory. See [RELEASING.md](RELEASING.md)
+for protected publication and the separate installation/Google acceptance checklist.
+Tests use `AgentTestRuntime` and deterministic responses without
 C-Sweet, Google credentials or a network connection. Host enforcement has separate fake-provider
 tests in C-Sweet.
 
