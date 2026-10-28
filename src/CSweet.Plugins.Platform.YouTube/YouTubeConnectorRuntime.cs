@@ -6,7 +6,7 @@ namespace CSweet.Plugins.Platform.YouTube;
 public sealed class YouTubeConnectorRuntime : CSweetAgentBase
 {
     public override string AgentId => "com.csweet.connector.youtube";
-    public override string Version => "0.2.0";
+    public override string Version => "0.2.1";
 
     protected override Task<AgentWorkResult> ExecuteCapabilityCoreAsync(AgentCapabilityRequest request,
         AgentRuntimeContext context, CancellationToken cancellationToken)

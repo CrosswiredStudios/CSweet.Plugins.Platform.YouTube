@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <ConnectorPackageVersion Condition="'$(ConnectorPackageVersion)' == ''">$(Version)</ConnectorPackageVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CSweet.Plugins.Platform.YouTube" Version="[$(ConnectorPackageVersion)]" />
+  </ItemGroup>
+</Project>
