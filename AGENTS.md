@@ -6,7 +6,7 @@ contracts. It is not the conversational agent and must never acquire employee au
 The executable/NuGet package is `CSweet.Plugins.Platform.YouTube`; its manifest installation
 kind is `connector`. Do not reintroduce the former `CSweet.Plugin.Connector.YouTube` dependency.
 
-- Keep `com.csweet.connector.youtube`, version `0.2.1`, SDK `5.5.0`, protocol minimum
+- Keep `com.csweet.connector.youtube`, version `0.2.2`, SDK `5.5.0`, protocol minimum
   `2.4`, the executable, manifest, package metadata and tests synchronized.
 - The reviewed root manifest owns operation semantics: exact schemas, scopes, effects,
   fixed destinations/fields and authenticated ownership checks.

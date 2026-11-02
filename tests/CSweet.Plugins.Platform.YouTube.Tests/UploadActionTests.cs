@@ -30,6 +30,10 @@ public sealed class UploadActionTests
         Assert.Equal("POST", operation.Http!.Method); Assert.Equal("https://www.googleapis.com/upload/youtube/v3/videos", operation.Http.Endpoint);
         Assert.Equal(new[] { "publishing" }, operation.Http.ScopeSets); Assert.Equal("/mediaAssetId", operation.Http.MediaInput);
         Assert.Equal("resumable-range.v1", operation.Http.MediaProtocol); Assert.Equal("resumable", operation.Http.QueryConstants["uploadType"]);
+        Assert.Equal("/snippet/channelId", Assert.Single(operation.Http.ResponseResourcePointers));
+        Assert.Contains("channelId", operation.OutputSchema.GetProperty("properties").GetProperty("snippet")
+            .GetProperty("required").EnumerateArray().Select(x => x.GetString()));
+        Assert.Contains("snippet(channelId,", operation.Http.QueryConstants["fields"]);
         Assert.Equal("/privacyStatus", operation.Http.BodyInputs["/status/privacyStatus"]);
         Assert.Equal("/madeForKids", operation.Http.BodyInputs["/status/selfDeclaredMadeForKids"]);
         Assert.Equal("/containsSyntheticMedia", operation.Http.BodyInputs["/status/containsSyntheticMedia"]);
