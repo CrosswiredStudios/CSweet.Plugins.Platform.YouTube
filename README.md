@@ -1,6 +1,13 @@
 # YouTube Connection
 
-`com.csweet.connector.youtube` · 0.2.1 · .NET 10 · CSweet.Agent.SDK 5.5.0 · protocol 2.4
+`com.csweet.connector.youtube` · 0.2.2 · .NET 10 · CSweet.Agent.SDK 5.5.0 · protocol 2.4
+
+Upload completion declares `/snippet/channelId` as authenticated response ownership evidence.
+The broker must compare it with the approved channel before releasing a result. This declaration
+does not enable uploads: exact action approval, media provenance, publishing consent and consuming
+agent/business access remain required. The managed relay also requires separately reviewed service
+execution policy and package approval. Version 0.2.2 is a new immutable package; do not patch an
+already approved 0.2.1 manifest/digest or claim this source change publishes a package.
 
 A deterministic integration package, separate from the conversational **YouTube Manager**.
 Install once at enterprise scope, then connect accounts, import authorized channels and explicitly

@@ -79,6 +79,11 @@ Upload consumers independently declare `youtube.api.video.upload.v1` and the nee
 read and cancel controls. Upload input has no credential, account, URL, chunk offset, arbitrary body
 or content-owner substitution. Privacy and audience/disclosure flags are explicit, not inferred
 permissions. Read-channel and read-video grants are needed to verify processing and final settings.
+The upload mapping declares `/snippet/channelId` as response ownership evidence; the broker must
+withhold a mismatched result. This adds no OAuth scope, runtime tool or agent authority. A new
+immutable package approval and matching connection consent are required for managed use of this
+new digest; existing base consent is not publishing permission. A withheld result cannot undo a
+provider effect, so uncertain or mismatched outcomes require reconciliation, never automatic replay.
 `Completed` proves the host saved a provider result; it does not by itself prove public visibility.
 The host's durable worker, approved media binding and migration are required. Chat attachment
 resolution is implemented; scheduling enforcement remains pending. Do not ask ordinary users for technical IDs.

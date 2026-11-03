@@ -4,7 +4,7 @@
   "kind": "connector",
   "id": "com.csweet.connector.youtube",
   "name": "YouTube",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": {
     "id": "com.csweet",
     "name": "C-Sweet"
@@ -4901,7 +4901,10 @@
           "/status/containsSyntheticMedia": "/containsSyntheticMedia"
         },
         "mediaInput": "/mediaAssetId",
-        "mediaProtocol": "resumable-range.v1"
+        "mediaProtocol": "resumable-range.v1",
+        "responseResourcePointers": [
+          "/snippet/channelId"
+        ]
       }
     },
     {
